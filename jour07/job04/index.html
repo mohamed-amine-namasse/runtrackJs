@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <!-- Compiled and minified CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="nav-wrapper">
+          <a href="#" class="brand-logo">Logo</a>
+          <ul class="right hide-on-med-and-down">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="index.html">Inscription</a></li>
+            <li><a href="index.html">Connexion</a></li>
+            <li><a href="index.html">Rechercher</a></li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <section class="container">
+      <div class="row">
+        <form class="col s12 m10 offset-m1 l8 offset-l2 card-panel z-depth-2">
+          <h2 class="center-align blue-text text-darken-2">Créer un compte</h2>
+
+          <div class="row">
+            <div class="col s12">
+              <p class="grey-text">Civilité</p>
+              <label>
+                <input
+                  name="civilite"
+                  type="radio"
+                  class="with-gap"
+                  value="Mme"
+                />
+                <span>Mme</span>
+              </label>
+              <label>
+                <input
+                  name="civilite"
+                  type="radio"
+                  class="with-gap"
+                  value="M"
+                />
+                <span>M.</span>
+              </label>
+              <label>
+                <input
+                  name="civilite"
+                  type="radio"
+                  class="with-gap"
+                  value="Autre"
+                />
+                <span>Autre</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="input-field col s12 m6">
+              <i class="material-icons prefix">person</i>
+              <input type="text" id="prenom" name="prenom" class="validate" />
+              <label for="prenom">Prénom</label>
+            </div>
+            <div class="input-field col s12 m6">
+              <i class="material-icons prefix">person_outline</i>
+              <input type="text" id="nom" name="nom" class="validate" />
+              <label for="nom">Nom</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="input-field col s12">
+              <i class="material-icons prefix">place</i>
+              <input type="text" id="adresse" name="adresse" class="validate" />
+              <label for="adresse">Adresse : N° et nom de rue</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="input-field col s12">
+              <i class="material-icons prefix">email</i>
+              <input type="email" id="email" name="email" class="validate" />
+              <label for="email">Adresse email</label>
+              <span
+                class="helper-text"
+                data-error="Email invalide"
+                data-success="Format correct"
+              ></span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="input-field col s12 m6">
+              <i class="material-icons prefix">lock</i>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="validate"
+              />
+              <label for="password">Mot de passe</label>
+            </div>
+            <div class="input-field col s12 m6">
+              <i class="material-icons prefix">check_circle</i>
+              <input
+                type="password"
+                id="password_confirm"
+                name="password_confirm"
+                class="validate"
+              />
+              <label for="password_confirm">Confirmer le mot de passe</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col s12">
+              <p class="grey-text">Vos passions</p>
+              <label class="col s12 m6 l3">
+                <input type="checkbox" id="informatique" class="filled-in" />
+                <span>Informatique</span>
+              </label>
+              <label class="col s12 m6 l3">
+                <input type="checkbox" id="voyages" class="filled-in" />
+                <span>Voyages</span>
+              </label>
+              <label class="col s12 m6 l3">
+                <input type="checkbox" id="sport" class="filled-in" />
+                <span>Sport</span>
+              </label>
+              <label class="col s12 m6 l3">
+                <input type="checkbox" id="lecture" class="filled-in" />
+                <span>Lecture</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="row center-align">
+            <button
+              class="btn waves-effect waves-light blue darken-2"
+              type="submit"
+            >
+              S'inscrire
+              <i class="material-icons right">send</i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <div class="container">
+        <div class="row">
+          <div class="col l6 s12">
+            <h5 class="white-text">Footer Content</h5>
+            <p class="grey-text text-lighten-4">Ici mon footer.</p>
+          </div>
+          <div class="col l4 offset-l2 s12">
+            <h5 class="white-text">Liens</h5>
+            <ul>
+              <li>
+                <a class="grey-text text-lighten-3" href="index.html"
+                  >Accueil</a
+                >
+              </li>
+              <li>
+                <a class="grey-text text-lighten-3" href="index.html"
+                  >Inscription</a
+                >
+              </li>
+              <li>
+                <a class="grey-text text-lighten-3" href="index.html"
+                  >Connexion</a
+                >
+              </li>
+              <li>
+                <a class="grey-text text-lighten-3" href="index.html"
+                  >Rechercher</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-copyright">
+        <div class="container">© 2026 Copyright</div>
+      </div>
+    </footer>
+  </body>
+</html>

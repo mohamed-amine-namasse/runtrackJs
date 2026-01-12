@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <header>
+      <nav></nav>
+    </header>
+
+    <section>
+      <h2>Créer un compte</h2>
+      <form>
+        <legend>Civilité</legend>
+        <input type="radio" id="mme" name="civilite" value="Mme" required />
+        <label for="mme">Mme</label>
+
+        <input type="radio" id="m" name="civilite" value="M" />
+        <label for="m">M.</label>
+
+        <input type="radio" id="autre" name="civilite" value="Autre" />
+        <label for="autre">Autre</label>
+
+        <div>
+          <label for="prenom">Prénom :</label>
+          <input
+            type="text"
+            id="prenom"
+            name="prenom"
+            placeholder="Votre prénom"
+          />
+        </div>
+
+        <div>
+          <label for="nom">Nom :</label>
+          <input type="text" id="nom" name="nom" placeholder="Votre nom" />
+        </div>
+
+        <div>
+          <label for="adresse">Adresse :</label>
+          <input
+            type="text"
+            id="adresse"
+            name="adresse"
+            placeholder="N° et nom de rue"
+          />
+        </div>
+
+        <div>
+          <label for="email">Adresse email :</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="exemple@domaine.com"
+          />
+        </div>
+
+        <div>
+          <label for="password">Mot de passe :</label>
+          <input type="password" id="password" name="password" />
+        </div>
+
+        <div>
+          <label for="password_confirm">Confirmer le mot de passe :</label>
+          <input
+            type="password"
+            id="password_confirm"
+            name="password_confirm"
+          />
+        </div>
+
+        <legend>Vos passions</legend>
+        <input
+          type="checkbox"
+          id="informatique"
+          name="passions"
+          value="informatique"
+        />
+        <label for="informatique">Informatique</label>
+
+        <input type="checkbox" id="voyages" name="passions" value="voyages" />
+        <label for="voyages">Voyages</label>
+
+        <input type="checkbox" id="sport" name="passions" value="sport" />
+        <label for="sport">Sport</label>
+
+        <input type="checkbox" id="lecture" name="passions" value="lecture" />
+        <label for="lecture">Lecture</label>
+
+        <button type="submit">S'inscrire</button>
+      </form>
+    </section>
+
+    <footer>
+      <a href="">Accueil</a>
+      <a href="">Inscription</a>
+      <a href="">Connexion</a>
+      <a href="">Rechercher</a>
+    </footer>
+  </body>
+</html>

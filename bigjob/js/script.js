@@ -150,6 +150,15 @@ function validateConfirmPassword(confirmPassword) {
   return true;
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Récupérer le formulaire de connexion (seulement sur la page connexion.html)
+  const loginForm = document.getElementById("loginForm");
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", handleLogin);
+  }
+});
+
 // Fonction pour gérer la connexion
 async function handleLogin(event) {
   event.preventDefault(); // Empêche l'envoi du formulaire par défaut
@@ -270,86 +279,60 @@ function checkLoginAlert() {
   }
 }
 // ===================================
-// ÉCOUTEUR GLOBAL DOMContentLoaded (VERSION SÉCURISÉE)
+// ÉCOUTEUR GLOBAL DOMContentLoaded
 // ===================================
-document.addEventListener("DOMContentLoaded", () => {
-  // Log de vérification (pour s'assurer que DOMContentLoaded s'exécute)
-  console.log("--- DOMContentLoaded lancé ---");
 
-  // 1. Initialisation des formulaires de connexion (si sur connexion.html)
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Récupérer le formulaire de connexion (seulement sur la page connexion.html)
   const loginForm = document.getElementById("loginForm");
+
   if (loginForm) {
     loginForm.addEventListener("submit", handleLogin);
   }
-
-  // 2. Mise à jour des liens de navigation
+  // Nouvelle étape : Mise à jour de la barre de navigation
   updateNavLinks();
-
-  // 3. Écouteur de déconnexion (nécessaire après updateNavLinks)
+  // ===========================================
+  // NOUVEAU : Écouteur pour le lien de déconnexion
+  // ===========================================
   const logoutLink = document.getElementById("nav-logout");
   if (logoutLink) {
     logoutLink.addEventListener("click", handleLogout);
   }
-
-  // 4. Affichage de l'alerte de connexion
+  // ===========================================
+  // 2. Vérifier si on est sur la page calendrier.html et si une connexion a eu lieu
+  // Cette fonction s'exécutera sur TOUTES les pages, mais agira seulement sur calendrier.html
+  // après une connexion, grâce à la vérification de sessionStorage.
   checkLoginAlert();
-
   // ===============================================
-  // *** GESTION DES PAGES SPÉCIFIQUES ***
+  // *** NOUVEAU : Initialisation du Calendrier ***
   // ===============================================
+  const container = document.querySelector(".container");
+  // On assume que le calendrier est la fonctionnalité principale de cette page
+  if (container && window.location.pathname.includes("calendrier.html")) {
+    // Afficher le calendrier pour le mois en cours
+    renderCalendar(new Date());
 
-  // GESTION CALENDRIER
-  if (window.location.pathname.includes("calendrier.html")) {
-    const container = document.querySelector(".container");
-    if (container) {
-      renderCalendar(new Date());
-      const h1Title = document.querySelector("h1");
-      if (h1Title) {
-        h1Title.textContent = "Calendrier des Présences";
-      }
-    }
-  }
-
-  // GESTION BACKOFFICE (L'APPEL CRITIQUE)
-  if (window.location.pathname.includes("backoffice.html")) {
-    console.log("--- Page Backoffice détectée ---");
-    const backofficeContainer = document.getElementById("backoffice-container");
-    const adminModoSection = document.getElementById("admin-moderator-section"); // Récupérer la nouvelle section
-    const userRole = localStorage.getItem("userRole");
-
-    // Logique de masquage de la liste Admin/Modérateur par défaut
-    if (adminModoSection) {
-      adminModoSection.style.display = "none"; // Masquer par défaut
-    }
-    if (backofficeContainer) {
-      if (userRole === "admin" || userRole === "moderator") {
-        console.log(
-          "--- Utilisateur Admin/Modérateur. Affichage des demandes. ---"
-        );
-        displayBackofficeRequests();
-        // --- LOGIQUE SPÉCIFIQUE ADMIN POUR LA LISTE ---
-        if (userRole === "admin") {
-          if (adminModoSection) {
-            console.log(
-              "--- Utilisateur est ADMIN. Affichage de la liste Admin/Modo. ---"
-            );
-            adminModoSection.style.display = "block"; // Afficher la section
-            loadAdminModeratorList(); // Charger les données depuis users.json
-          }
-        }
-      } else {
-        console.warn("--- Utilisateur non autorisé. Bloqué. ---");
-        backofficeContainer.innerHTML =
-          '<div class="alert alert-danger">Accès non autorisé. Veuillez vous connecter avec un compte admin ou modérateur.</div>';
-      }
-    } else {
-      console.error(
-        "L'élément #backoffice-container est manquant dans le HTML."
-      );
+    // Mise à jour du titre
+    const h1Title = document.querySelector("h1");
+    if (h1Title) {
+      h1Title.textContent = "Calendrier des Présences";
     }
   }
 });
 
+// Clé pour stocker les demandes de présence dans localStorage
+const PRESENCE_STORAGE_KEY = "userPresenceRequests";
+
+// Récupère les demandes stockées ou initialise un objet vide.
+function getPresenceRequests() {
+  const storedRequests = localStorage.getItem(PRESENCE_STORAGE_KEY);
+  return storedRequests ? JSON.parse(storedRequests) : {};
+}
+
+// Sauvegarde l'état actuel des demandes.
+function savePresenceRequests(requests) {
+  localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(requests));
+}
 /**
  * Génère le calendrier pour le mois et l'année en cours.
  * @param {Date} targetDate - Le mois et l'année à afficher.
@@ -369,7 +352,7 @@ function renderCalendar(targetDate) {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   // Récupérer l'état actuel de l'utilisateur
-  const presenceRequests = getUserRequests();
+  const presenceRequests = getPresenceRequests();
 
   // Titre du mois
   const monthName = targetDate.toLocaleString("fr-FR", {
@@ -419,32 +402,16 @@ function renderCalendar(targetDate) {
     let buttonClass = "btn-success";
     let buttonText = "Demander";
     let cellClass = "";
-    let isDisabled = "";
 
     if (isPast) {
       buttonClass = "btn-danger disabled";
       buttonText = "Passé";
       cellClass = "day-past";
-      isDisabled = "disabled"; // Désactiver les dates passées
-    } else if (requestState === PENDING_STATUS) {
-      // Utiliser la constante PENDING_STATUS
+    } else if (requestState === "requested") {
       buttonClass = "btn-warning";
       buttonText = "Annuler";
     }
-    // === NOUVEAU CODE POUR GÉRER ACCEPTÉ/REFUSÉ ===
-    else if (requestState === ACCEPTED_STATUS) {
-      // Utiliser la constante ACCEPTED_STATUS
-      buttonClass = "btn-warning disabled";
-      buttonText = "Accepté";
-      cellClass = "day-accepted";
-      isDisabled = "disabled";
-    } else if (requestState === REFUSED_STATUS) {
-      // Utiliser la constante REFUSED_STATUS
-      buttonClass = "btn-dark disabled";
-      buttonText = "Refusé";
-      cellClass = "day-refused";
-      isDisabled = "disabled";
-    }
+
     // Structure de la cellule du jour
     daysGrid.innerHTML += `
             <div class="day ${cellClass} ${
@@ -454,7 +421,7 @@ function renderCalendar(targetDate) {
                 <button 
                     class="btn btn-sm ${buttonClass} presence-toggle" 
                     data-date="${fullDate}" 
-                    ${isDisabled} 
+                    ${isPast ? "disabled" : ""}
                 >
                     ${buttonText}
                 </button>
@@ -482,7 +449,7 @@ function attachCalendarListeners() {
 function handlePresenceToggle(event) {
   const button = event.target;
   const date = button.getAttribute("data-date");
-  let requests = getUserRequests();
+  let requests = getPresenceRequests();
   let message = "";
 
   // Toggle l'état de la demande
@@ -498,7 +465,7 @@ function handlePresenceToggle(event) {
     button.textContent = "Annuler";
   }
 
-  saveUserRequests(requests);
+  savePresenceRequests(requests);
   const alertElement = document.getElementById("alert-message");
   if (alertElement) {
     alertElement.scrollIntoView({
@@ -611,334 +578,97 @@ function handleLogout(event) {
   }, 2000); // 2s d'attente pour la transition de l'alerte
 }
 
-// Les statuts après traitement
-const ACCEPTED_STATUS = "demande acceptée";
-const REFUSED_STATUS = "refusée";
-const PENDING_STATUS = "requested";
-const BASE_STORAGE_KEY = "presenceRequests_";
+// Assurez-vous d'avoir les fonctions get/save qui interagissent avec localStorage
+// ou votre source de données (si ce n'est pas le cas, utilisez celles que vous avez
+// pour le calendrier, basées sur les demandes de présence stockées).
 
-function getAllRequestsForAdmin() {
-  let allRequests = [];
+// --- (Fonctions getPresenceRequests, savePresenceRequests et displayAlert DOIVENT être présentes ici) ---
 
-  // LOG CRITIQUE 1: Vérifie si la clé de base est correcte
-  console.log(
-    "BASE_STORAGE_KEY utilisée :",
-    typeof BASE_STORAGE_KEY !== "undefined" ? BASE_STORAGE_KEY : "NON DÉFINIE"
-  );
-
-  // 1. Parcourir toutes les clés du localStorage
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-
-    // 2. Filtrer uniquement les clés de demandes de présence
-    if (key.startsWith(BASE_STORAGE_KEY)) {
-      const userEmail = key.substring(BASE_STORAGE_KEY.length);
-      console.log(`TROUVÉ: Clé utilisateur: ${key}`); // LOG 2: Clé trouvée
-
-      try {
-        const userRequests = JSON.parse(localStorage.getItem(key));
-
-        // 3. Parcourir les demandes de cet utilisateur
-        Object.keys(userRequests).forEach((date) => {
-          const status = userRequests[date];
-
-          // LOG 3: Statut de la demande
-          console.log(`  - Demande pour ${date} a le statut: ${status}`);
-
-          // 4. Stocker la demande avec l'email de l'utilisateur
-          allRequests.push({
-            date,
-            status,
-            userEmail,
-          });
-        });
-      } catch (e) {
-        console.error(
-          "Erreur de parsing des données pour l'utilisateur:",
-          userEmail,
-          e
-        );
-      }
-    }
-  }
-  // LOG 4: Résultat final
-  console.log(
-    `Total des demandes collectées par getAllRequestsForAdmin: ${allRequests.length}`
-  );
-  return allRequests;
-}
-
+// 1. Fonction pour générer et afficher le tableau
 function displayBackofficeRequests() {
-  // *** NOUVEAU : Récupération de TOUTES les demandes de TOUS les utilisateurs ***
-  const allRequests = getAllRequestsForAdmin();
+  const requests = getPresenceRequests(); // Récupère toutes les demandes
+  const container = document.getElementById("requests-table-container");
+  let htmlContent = "";
 
-  const pendingContainer = document.getElementById("requests-table-container");
-  const processedContainer = document.getElementById(
-    "processed-requests-table-container"
+  // Filtrer pour n'afficher que les demandes 'requested' (en attente de modération)
+  const pendingRequests = Object.keys(requests).filter(
+    (date) => requests[date] === "requested"
   );
 
-  let pendingRequests = [];
-  let processedRequests = [];
-
-  // --- SÉPARATION DES DEMANDES EN UN SEUL PASSAGE ---
-  // allRequests contient maintenant des objets { date, status, userEmail }
-  allRequests.forEach((request) => {
-    // Le tableau allRequests est déjà formaté correctement.
-    if (request.status === PENDING_STATUS) {
-      pendingRequests.push(request); // Pousse l'objet complet { date, status, userEmail }
-    } else if (
-      request.status === ACCEPTED_STATUS ||
-      request.status === REFUSED_STATUS
-    ) {
-      processedRequests.push(request); // Pousse l'objet complet { date, status, userEmail }
-    }
-  });
-
-  // --- Génération de la table des Demandes en Attente ---
   if (pendingRequests.length === 0) {
-    pendingContainer.innerHTML =
+    htmlContent =
       '<div class="alert alert-success">Aucune demande de présence en attente de modération.</div>';
   } else {
-    pendingContainer.innerHTML = generateTableHtml(pendingRequests, "pending");
-  }
-
-  // --- Génération de la table des Demandes Traitées ---
-  if (processedRequests.length === 0) {
-    processedContainer.innerHTML =
-      '<div class="alert alert-info">Aucune demande n\'a encore été acceptée ou refusée.</div>';
-  } else {
-    processedContainer.innerHTML = generateTableHtml(
-      processedRequests,
-      "processed"
-    );
-  }
-}
-
-// 2. Fonction pour Accepter une demande
-function handleAccept(date, userEmail) {
-  // Utilisation de la clé utilisateur pour récupérer et sauver l'état
-  const USER_KEY = BASE_STORAGE_KEY + userEmail;
-  let requests = JSON.parse(localStorage.getItem(USER_KEY) || "{}"); // Récupère le localStorage de cet utilisateur
-
-  requests[date] = ACCEPTED_STATUS;
-  localStorage.setItem(USER_KEY, JSON.stringify(requests)); // Sauve dans le localStorage de cet utilisateur
-
-  displayBackofficeRequests();
-  displayAlert("La demande de présence a été accepté avec succès.", 3000);
-}
-
-// 3. Fonction pour Refuser une demande
-function handleRefuse(date, userEmail) {
-  // <-- Ajout de userEmail
-  // Utilisation de la clé utilisateur pour récupérer et sauver l'état
-  const USER_KEY = BASE_STORAGE_KEY + userEmail;
-  let requests = JSON.parse(localStorage.getItem(USER_KEY) || "{}"); // Récupère le localStorage de cet utilisateur
-
-  requests[date] = REFUSED_STATUS;
-  localStorage.setItem(USER_KEY, JSON.stringify(requests)); // Sauve dans le localStorage de cet utilisateur
-
-  displayBackofficeRequests();
-  displayAlert("La demande de présence a été refusé avec succès.", 3000);
-}
-
-/**
- * Génère le code HTML d'un tableau pour un ensemble de demandes.
- * @param {Array<object>} dataArray - Tableau d'objets {date, status, userEmail}.
- * @param {string} type - 'pending' ou 'processed'.
- * @returns {string} Le code HTML du tableau.
- */
-function generateTableHtml(dataArray, type) {
-  let htmlContent = `
-        <table class="table table-striped table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Demandeur (Email)</th>
-                    <th>Date de la Demande</th>
-                    <th>Statut</th>
-                    ${type === "pending" ? "<th>Actions</th>" : ""}
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-  dataArray.forEach((request) => {
-    const date = request.date;
-    const status = request.status;
-    const email = request.userEmail; // <-- Récupération de l'email
-
-    let statusBadge = "";
-    let actions = "";
-
-    // ... (Le reste de la logique de détermination du badge et des actions est inchangée) ...
-    if (status === PENDING_STATUS) {
-      statusBadge = '<span class="badge text-bg-warning">En Attente</span>';
-      actions = `
-                <button class="btn btn-sm btn-success me-2" onclick="handleAccept('${date}', '${email}')">
-                    Accepter
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="handleRefuse('${date}', '${email}')">
-                    Refuser
-                </button>
-            `;
-    } else if (status === ACCEPTED_STATUS) {
-      statusBadge =
-        '<span class="badge text-bg-success">Demande Acceptée</span>';
-    } else if (status === REFUSED_STATUS) {
-      statusBadge = '<span class="badge text-bg-danger">Refusée</span>';
-    }
-    // Fin de la logique inchangée
-
-    htmlContent += `
-            <tr id="request-${date}">
-                <td>${email}</td> 
-                <td>${date}</td>
-                <td>${statusBadge}</td>
-                ${type === "pending" ? `<td>${actions}</td>` : ""}
-            </tr>
-        `;
-  });
-
-  htmlContent += `
-            </tbody>
-        </table>
-    `;
-  return htmlContent;
-}
-
-function getCurrentUserEmail() {
-  // Si déconnecté, on retourne une clé par défaut, mais ce n'est pas idéal pour le calendrier.
-  return localStorage.getItem("userEmail");
-}
-
-// Nouvelle fonction pour sauver les demandes (elle est liée à l'utilisateur)
-function saveUserRequests(requests) {
-  const userEmail = getCurrentUserEmail();
-  if (userEmail) {
-    localStorage.setItem(
-      BASE_STORAGE_KEY + userEmail,
-      JSON.stringify(requests)
-    );
-  }
-}
-
-// Nouvelle fonction pour récupérer les demandes (elle est liée à l'utilisateur)
-function getUserRequests() {
-  const userEmail = getCurrentUserEmail();
-  if (userEmail) {
-    const storedRequests = localStorage.getItem(BASE_STORAGE_KEY + userEmail);
-    return storedRequests ? JSON.parse(storedRequests) : {};
-  }
-  // Si l'utilisateur n'est pas identifié ou pas un user standard, on retourne vide.
-  return {};
-}
-
-/**
- * Charge la liste des administrateurs et modérateurs en lisant le fichier users.json.
- * Cette fonction ne devrait être appelée que si l'utilisateur est 'admin'.
- */
-async function loadAdminModeratorList() {
-  console.log(
-    "Tentative de chargement de la liste Admin/Modérateur avec actions..."
-  );
-  const container = document.getElementById("admin-moderator-list-container");
-
-  if (!container) {
-    console.error(
-      "Le conteneur de la liste admins/modos est manquant dans le HTML."
-    );
-    return;
-  }
-
-  try {
-    // --- 1. CHARGEMENT ET FILTRAGE DES DONNÉES ---
-    const response = await fetch("./users.json");
-
-    if (!response.ok) {
-      throw new Error(
-        `Erreur de chargement des données utilisateurs: ${response.status}`
-      );
-    }
-
-    // Nous lisons TOUS les utilisateurs, car les utilisateurs non privilégiés sont nécessaires pour l'ajout
-    const users = await response.json();
-
-    // On filtre seulement pour afficher les admins/modérateurs
-    const privilegedUsers = users.filter(
-      (user) => user.role === "admin" || user.role === "moderator"
-    );
-
-    // --- 2. CONSTRUCTION DU BOUTON AJOUTER ---
-    let htmlContent = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="h4">Gestion des privilèges</h3>
-                <button 
-                    class="btn btn-primary" 
-                    id="addUserPrivilegeBtn" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#addUserModal"
-                >
-                    Ajouter un utilisateur
-                </button>
-            </div>
+    htmlContent = `
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date de la Demande</th>
+                        <th>Email </th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
         `;
 
-    if (privilegedUsers.length === 0) {
-      htmlContent +=
-        '<div class="alert alert-info">Aucun administrateur ou modérateur trouvé.</div>';
-      container.innerHTML = htmlContent;
-      return;
-    }
-
-    // --- 3. GÉNÉRATION DU HTML DU TABLEAU AVEC BOUTONS D'ACTION ---
-    htmlContent +=
-      '<table class="table table-striped table-bordered table-hover mt-3">';
-    htmlContent +=
-      "<thead><tr><th>Email</th><th>Rôle</th><th>Actions</th></tr></thead>";
-    htmlContent += "<tbody>";
-
-    privilegedUsers.forEach((user) => {
-      const badgeClass =
-        user.role === "admin" ? "text-bg-danger" : "text-bg-primary";
-
-      // L'administrateur NE DOIT PAS POUVOIR se supprimer lui-même (sauf si c'est géré côté serveur)
-      const currentUserEmail = localStorage.getItem("userEmail");
-      const isSelf = user.email === currentUserEmail;
-
-      // Le bouton Supprimer est grisé si l'utilisateur essaie de se supprimer
-      const deleteButton = `
-                <button 
-                    class="btn btn-sm btn-danger" 
-                    onclick="handleDeleteUser('${user.email}')"
-                    ${
-                      isSelf
-                        ? 'disabled title="Vous ne pouvez pas vous retirer vos propres privilèges."'
-                        : ""
-                    }
-                >
-                    Supprimer
-                </button>
-            `;
-
+    pendingRequests.forEach((date) => {
+      // NOTE : Dans un vrai système, vous auriez le nom de l'utilisateur.
+      // Ici, on utilise la date comme clé.
       htmlContent += `
-                <tr id="user-row-${user.email.replace(
-                  /[^a-zA-Z0-9]/g,
-                  "-"
-                )}" class="${isSelf ? "table-warning" : ""}">
-                    <td>${user.email}</td>
-                    <td><span class="badge ${badgeClass}">${user.role.toUpperCase()}</span></td>
-                    <td>${deleteButton}</td>
+                <tr id="request-${date}">
+                    <td>${date}</td>
+                    <td><span class="badge text-bg-warning">En Attente</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-success me-2" onclick="handleAccept('${date}')">
+                            Accepter
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="handleRefuse('${date}')">
+                            Refuser
+                        </button>
+                    </td>
                 </tr>
             `;
     });
 
-    htmlContent += "</tbody></table>";
-    container.innerHTML = htmlContent;
-  } catch (error) {
-    console.error(
-      "Erreur lors du chargement ou du traitement des utilisateurs:",
-      error
-    );
-    container.innerHTML =
-      '<div class="alert alert-danger">Erreur critique : Impossible de charger la liste des utilisateurs.</div>';
+    htmlContent += `
+                </tbody>
+            </table>
+        `;
   }
+
+  container.innerHTML = htmlContent;
+}
+
+// 2. Fonction pour Accepter une demande
+function handleAccept(date) {
+  let requests = getPresenceRequests();
+
+  // Mettre à jour le statut dans les données
+  requests[date] = "accepted"; // Nouveau statut
+  savePresenceRequests(requests);
+
+  // Mettre à jour l'affichage et informer l'utilisateur
+  displayBackofficeRequests(); // Rafraîchit le tableau
+
+  displayAlert("La demande de présence a été accepté avec succès.", 3000);
+}
+
+// 3. Fonction pour Refuser une demande
+function handleRefuse(date) {
+  let requests = getPresenceRequests();
+
+  // Mettre à jour le statut dans les données
+  requests[date] = "refused"; // Nouveau statut
+  savePresenceRequests(requests);
+
+  // Mettre à jour l'affichage et informer l'utilisateur
+  displayBackofficeRequests(); // Rafraîchit le tableau
+  displayAlert("La demande de présence a été refusé avec succès.", 3000);
+}
+
+// 4. Lancement de la fonction au chargement de la page si nous sommes sur backoffice.html
+// Cette vérification est essentielle si script.js est utilisé sur plusieurs pages.
+if (window.location.pathname.includes("backoffice.html")) {
+  document.addEventListener("DOMContentLoaded", displayBackofficeRequests);
 }

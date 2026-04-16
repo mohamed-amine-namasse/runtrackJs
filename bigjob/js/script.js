@@ -250,7 +250,7 @@ function displayAlert(message, duration = 3000) {
 }
 
 function checkLoginAlert() {
-  // NOUVEAU CODE : Utilisation de localStorage (ou gardez sessionStorage si c'est ce qui est attendu)
+  // NOUVEAU CODE : Utilisation de localStorage
   const loginSuccess = localStorage.getItem("isLoggedIn");
   const userEmail = localStorage.getItem("userEmail");
 

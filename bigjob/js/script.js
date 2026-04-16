@@ -15,7 +15,7 @@ function validateField(fieldName, value) {
       fieldName,
       `Le champ ${
         fieldName.charAt(0).toUpperCase() + fieldName.slice(1)
-      } est obligatoire.`
+      } est obligatoire.`,
     );
     return false;
   }
@@ -28,7 +28,7 @@ function validateField(fieldName, value) {
     if (cleanedValue.length < 2 || cleanedValue.length > 50) {
       displayError(
         fieldName,
-        `Le ${fieldName} doit contenir entre 2 et 50 caractères.`
+        `Le ${fieldName} doit contenir entre 2 et 50 caractères.`,
       );
       return false;
     }
@@ -36,7 +36,7 @@ function validateField(fieldName, value) {
     if (!nameRegex.test(cleanedValue)) {
       displayError(
         fieldName,
-        `Le ${fieldName} ne doit contenir que des lettres, espaces, traits d'union et apostrophes.`
+        `Le ${fieldName} ne doit contenir que des lettres, espaces, traits d'union et apostrophes.`,
       );
       return false;
     }
@@ -111,7 +111,7 @@ function validateConfirmPassword(confirmPassword) {
   if (confirmPassword.length === 0) {
     displayError(
       "confirm_password",
-      "La confirmation de mot de passe est obligatoire."
+      "La confirmation de mot de passe est obligatoire.",
     );
     return false;
   }
@@ -142,7 +142,7 @@ function validateConfirmPassword(confirmPassword) {
     const required = errors.join(", ");
     displayError(
       "confirm_password",
-      `Le mot de passe doit contenir : ${required}.`
+      `Le mot de passe doit contenir : ${required}.`,
     );
     return false;
   }
@@ -183,7 +183,7 @@ async function handleLogin(event) {
 
     // 3. Chercher l'utilisateur correspondant (email et mot de passe)
     const userFound = users.find(
-      (user) => user.email === emailInput && user.password === passwordInput
+      (user) => user.email === emailInput && user.password === passwordInput,
     );
 
     if (userFound) {
@@ -228,7 +228,7 @@ function displayAlert(message, duration = 3000) {
   // Si l'élément n'existe pas, on log l'erreur pour le développeur
   if (!alertDiv) {
     console.error(
-      "L'élément #alert-message n'existe pas. Veuillez l'ajouter au HTML."
+      "L'élément #alert-message n'existe pas. Veuillez l'ajouter au HTML.",
     );
     return;
   }
@@ -250,10 +250,6 @@ function displayAlert(message, duration = 3000) {
 }
 
 function checkLoginAlert() {
-  // Ancien code avec sessionStorage à enlever :
-  // const loginSuccess = sessionStorage.getItem("loginSuccess");
-  // const userEmail = sessionStorage.getItem("userEmail");
-
   // NOUVEAU CODE : Utilisation de localStorage (ou gardez sessionStorage si c'est ce qui est attendu)
   const loginSuccess = localStorage.getItem("isLoggedIn");
   const userEmail = localStorage.getItem("userEmail");
@@ -391,7 +387,7 @@ function renderCalendar(targetDate) {
   for (let day = 1; day <= daysInMonth; day++) {
     const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(
       2,
-      "0"
+      "0",
     )}-${String(day).padStart(2, "0")}`;
     const dayDate = new Date(currentYear, currentMonth, day);
 
@@ -415,8 +411,8 @@ function renderCalendar(targetDate) {
     // Structure de la cellule du jour
     daysGrid.innerHTML += `
             <div class="day ${cellClass} ${
-      dayDate.toDateString() === today.toDateString() ? "day-today" : ""
-    }">
+              dayDate.toDateString() === today.toDateString() ? "day-today" : ""
+            }">
                 <div class="day-number">${day}</div>
                 <button 
                     class="btn btn-sm ${buttonClass} presence-toggle" 
@@ -592,7 +588,7 @@ function displayBackofficeRequests() {
 
   // Filtrer pour n'afficher que les demandes 'requested' (en attente de modération)
   const pendingRequests = Object.keys(requests).filter(
-    (date) => requests[date] === "requested"
+    (date) => requests[date] === "requested",
   );
 
   if (pendingRequests.length === 0) {
